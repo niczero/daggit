@@ -79,7 +79,7 @@ var gitGraph = function (canvas, rawGraphList, config) {
     return i;
   };
   
-  var findColomn = function (symbol, row) {
+  var findColumn = function (symbol, row) {
     var i = row.length;
     
     while (i-- && row[i] !== symbol) {}
@@ -156,7 +156,7 @@ var gitGraph = function (canvas, rawGraphList, config) {
   };
   
   var draw = function (graphList) {
-    var column, columnIndex, prevColomn, condenseIndex;
+    var column, columnIndex, prevColumn, condenseIndex;
     var x, y;
     var color;
     var nodePos, outPos;
@@ -170,7 +170,7 @@ var gitGraph = function (canvas, rawGraphList, config) {
     var inlineIntersect = false;
     
     // initiate for first row
-    for (i = 0, l = graphList[0].length; i < l; i++) {
+    for (i = 0, l = graphList[0].length; i < l; ++i) {
       if (graphList[0][i] !== '_' && graphList[0][i] !== ' ') {
         flows.push(genNewFlow());
       }
@@ -179,7 +179,7 @@ var gitGraph = function (canvas, rawGraphList, config) {
     y = (canvas.height / ratio) - config.unitSize * 0.5;
     
     // iterate
-    for (i = 0, l = graphList.length; i < l; i++) {
+    for (i = 0, l = graphList.length; i < l; ++i) {
       x = config.unitSize * 0.5;
       
       currentRow = graphList[i];
@@ -189,12 +189,12 @@ var gitGraph = function (canvas, rawGraphList, config) {
       flowSwapPos = -1;
       
       condenseCurrentLength = currentRow.filter(function (val) {
-        return (val !== ' '  && val !== '_')
+        return (val !== ' ' && val !== '_')
       }).length;
       
       if (nextRow) {
         condenseNextLength = nextRow.filter(function (val) {
-          return (val !== ' '  && val !== '_')
+          return (val !== ' ' && val !== '_')
         }).length;
       }
       else {
@@ -206,12 +206,12 @@ var gitGraph = function (canvas, rawGraphList, config) {
       if (prevRow) {
         if (!inlineIntersect) {
           // intersect might happen
-          for (columnIndex = 0; columnIndex < prevRowLength; columnIndex++) {
-            if (prevRow[columnIndex + 1] && (prevRow[columnIndex] === '/' && prevRow[columnIndex + 1] === '|')
-                || ((prevRow[columnIndex] === '_' && prevRow[columnIndex + 1] === '|') && (prevRow[columnIndex + 2] === '/'))) {
+          for (columnIndex = 0; columnIndex < prevRowLength; ++columnIndex) {
+            if (prevRow[columnIndex + 1] && prevRow[columnIndex] === '/' && prevRow[columnIndex + 1] === '|'
+                || prevRow[columnIndex] === '_' && prevRow[columnIndex + 1] === '|' && prevRow[columnIndex + 2] === '/') {
               flowSwapPos = columnIndex;
               
-              // swap two flow
+              // swap two flows
               tempFlow = {id:flows[flowSwapPos].id, color:flows[flowSwapPos].color};
               
               flows[flowSwapPos].id = flows[flowSwapPos + 1].id;
@@ -224,17 +224,17 @@ var gitGraph = function (canvas, rawGraphList, config) {
         }
         
         if (condensePrevLength < condenseCurrentLength
-            && ((nodePos = findColomn('*', currentRow)) !== -1
-            && (findColomn('_', currentRow) === -1))) {
+            && (nodePos = findColumn('*', currentRow)) !== -1
+            && findColumn('_', currentRow) === -1) {
           flows.splice(nodePos - 1, 0, genNewFlow());
         }
         
         if (prevRowLength > currentRow.length
-            && (nodePos = findColomn('*', prevRow)) !== -1) {
+            && (nodePos = findColumn('*', prevRow)) !== -1) {
           
-          if (findColomn('_', currentRow) === -1
-              && findColomn('/', currentRow) === -1
-              && findColomn('\\', currentRow) === -1) {
+          if (findColumn('_', currentRow) === -1
+              && findColumn('/', currentRow) === -1
+              && findColumn('\\', currentRow) === -1) {
             flows.splice(nodePos + 1, 1);
           }
         }
@@ -273,8 +273,8 @@ var gitGraph = function (canvas, rawGraphList, config) {
         // change \ and / to | when it's in the last position of the whole row
         if (column === '/' || column === '\\') {
           if (!(column === '/' && findBranchOut(nextRow) === -1)) {
-            if ((lastLinePos = Math.max(findColomn('|', currentRow), findColomn('*', currentRow))) !== -1
-                && (lastLinePos < columnIndex - 1)) {
+            if ((lastLinePos = Math.max(findColumn('|', currentRow), findColumn('*', currentRow)) ) !== -1
+                && lastLinePos < columnIndex - 1) {
               while (currentRow[++lastLinePos] === ' ') {}
               
               if (lastLinePos === columnIndex) {
@@ -298,7 +298,7 @@ var gitGraph = function (canvas, rawGraphList, config) {
       }
       
       condenseCurrentLength = currentRow.filter(function (val) {
-        return (val !== ' '  && val !== '_')
+        return (val !== ' ' && val !== '_')
       }).length;
       
       // do some clean up
@@ -311,7 +311,7 @@ var gitGraph = function (canvas, rawGraphList, config) {
       // a little inline analysis and draw process
       while (columnIndex < currentRow.length) {
         column = currentRow[columnIndex];
-        prevColomn = currentRow[columnIndex - 1];
+        prevColumn = currentRow[columnIndex - 1];
         
         if (currentRow[columnIndex] === ' ') {
           currentRow.splice(columnIndex, 1);
@@ -354,9 +354,8 @@ var gitGraph = function (canvas, rawGraphList, config) {
             break;
             
           case '/' :
-            if (prevColomn
-                && (prevColomn === '/'
-                  || prevColomn === ' ')) {
+            if (prevColumn
+                && (prevColumn === '/' || prevColumn === ' ')) {
               x -= config.unitSize;
             }
             
