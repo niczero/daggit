@@ -3,7 +3,7 @@ var gitGraph = function (canvas, rawGraphList, config) {
     return;
   }
   
-  if (typeof config === "undefined") {
+  if (typeof config === 'undefined') {
     config = {
       unitSize: 20,
       lineWidth: 3,
@@ -14,7 +14,7 @@ var gitGraph = function (canvas, rawGraphList, config) {
   var flows = [];
   var graphList = [];
   
-  var ctx = canvas.getContext("2d");
+  var ctx = canvas.getContext('2d');
   
   var devicePixelRatio = window.devicePixelRatio || 1;
   var backingStoreRatio = ctx.webkitBackingStorePixelRatio
@@ -34,11 +34,11 @@ var gitGraph = function (canvas, rawGraphList, config) {
     var midStr;
     
     for (i = 0; i < l; i++) {
-      midStr = rawGraphList[i].replace(/\s+/g, " ").replace(/^\s+|\s+$/g, "");
+      midStr = rawGraphList[i].replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
       
-      maxWidth = Math.max(midStr.replace(/(\_|\s)/g, "").length, maxWidth);
+      maxWidth = Math.max(midStr.replace(/(\_|\s)/g, '').length, maxWidth);
       
-      row = midStr.split("");
+      row = midStr.split('');
       
       graphList.unshift(row);
     }
@@ -53,14 +53,14 @@ var gitGraph = function (canvas, rawGraphList, config) {
     canvas.style.height = height + 'px';
     
     ctx.lineWidth = config.lineWidth;
-    ctx.lineJoin = "round";
-    ctx.lineCap = "round";
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
 
     ctx.scale(ratio, ratio);
   };
   
   var genRandomStr = function () {
-    var chars = "0123456789ABCDEF";
+    var chars = '0123456789ABCDEF';
     var stringLength = 6;
     var randomString = '', rnum, i;
     for (i = 0; i < stringLength; i++) {
@@ -95,8 +95,8 @@ var gitGraph = function (canvas, rawGraphList, config) {
     var i = row.length;
     
     while (i--
-      && !(row[i - 1] && row[i] === "/" && row[i - 1] === "|")
-      && !(row[i - 2] && row[i] === "_" && row[i - 2] === "|")) {}
+      && !(row[i - 1] && row[i] === '/' && row[i - 1] === '|')
+      && !(row[i - 2] && row[i] === '_' && row[i - 2] === '|')) {}
     
     return i;
   }
@@ -108,7 +108,7 @@ var gitGraph = function (canvas, rawGraphList, config) {
       newId = genRandomStr();
     } while (findFlow(newId) !== -1);
     
-    return {id:newId, color:"#" + newId};
+    return {id:newId, color:'#' + newId};
   };
   
   // draw method
@@ -171,7 +171,7 @@ var gitGraph = function (canvas, rawGraphList, config) {
     
     // initiate for first row
     for (i = 0, l = graphList[0].length; i < l; i++) {
-      if (graphList[0][i] !== "_" && graphList[0][i] !== " ") {
+      if (graphList[0][i] !== '_' && graphList[0][i] !== ' ') {
         flows.push(genNewFlow());
       }
     }
@@ -189,12 +189,12 @@ var gitGraph = function (canvas, rawGraphList, config) {
       flowSwapPos = -1;
       
       condenseCurrentLength = currentRow.filter(function (val) {
-        return (val !== " "  && val !== "_")
+        return (val !== ' '  && val !== '_')
       }).length;
       
       if (nextRow) {
         condenseNextLength = nextRow.filter(function (val) {
-          return (val !== " "  && val !== "_")
+          return (val !== ' '  && val !== '_')
         }).length;
       }
       else {
@@ -207,8 +207,8 @@ var gitGraph = function (canvas, rawGraphList, config) {
         if (!inlineIntersect) {
           // intersect might happen
           for (colomnIndex = 0; colomnIndex < prevRowLength; colomnIndex++) {
-            if (prevRow[colomnIndex + 1] && (prevRow[colomnIndex] === "/" && prevRow[colomnIndex + 1] === "|")
-                || ((prevRow[colomnIndex] === "_" && prevRow[colomnIndex + 1] === "|") && (prevRow[colomnIndex + 2] === "/"))) {
+            if (prevRow[colomnIndex + 1] && (prevRow[colomnIndex] === '/' && prevRow[colomnIndex + 1] === '|')
+                || ((prevRow[colomnIndex] === '_' && prevRow[colomnIndex + 1] === '|') && (prevRow[colomnIndex + 2] === '/'))) {
               flowSwapPos = colomnIndex;
               
               // swap two flow
@@ -224,17 +224,17 @@ var gitGraph = function (canvas, rawGraphList, config) {
         }
         
         if (condensePrevLength < condenseCurrentLength
-            && ((nodePos = findColomn("*", currentRow)) !== -1
-            && (findColomn("_", currentRow) === -1))) {
+            && ((nodePos = findColomn('*', currentRow)) !== -1
+            && (findColomn('_', currentRow) === -1))) {
           flows.splice(nodePos - 1, 0, genNewFlow());
         }
         
         if (prevRowLength > currentRow.length
-            && (nodePos = findColomn("*", prevRow)) !== -1) {
+            && (nodePos = findColomn('*', prevRow)) !== -1) {
           
-          if (findColomn("_", currentRow) === -1
-              && findColomn("/", currentRow) === -1
-              && findColomn("\\", currentRow) === -1) {
+          if (findColomn('_', currentRow) === -1
+              && findColomn('/', currentRow) === -1
+              && findColomn('\\', currentRow) === -1) {
             flows.splice(nodePos + 1, 1);
           }
         }
@@ -247,50 +247,50 @@ var gitGraph = function (canvas, rawGraphList, config) {
       while (colomnIndex < currentRow.length) {
         colomn = currentRow[colomnIndex];
         
-        if (colomn !== " " && colomn !== "_") {
+        if (colomn !== ' ' && colomn !== '_') {
           ++condensePrevLength;
         }
         
-        if (colomn === " "
+        if (colomn === ' '
             && currentRow[colomnIndex + 1]
-            && currentRow[colomnIndex + 1] === "_"
+            && currentRow[colomnIndex + 1] === '_'
             && currentRow[colomnIndex - 1]
-            && currentRow[colomnIndex - 1] === "|") {
+            && currentRow[colomnIndex - 1] === '|') {
           currentRow.splice(colomnIndex, 1);
           
-          currentRow[colomnIndex] = "/";
-          colomn = "/";
+          currentRow[colomnIndex] = '/';
+          colomn = '/';
         }
         
         // create new flow only when no intersetc happened
         if (flowSwapPos === -1
-            && colomn === "/"
+            && colomn === '/'
             && currentRow[colomnIndex - 1]
-            && currentRow[colomnIndex - 1] === "|") {
+            && currentRow[colomnIndex - 1] === '|') {
           flows.splice(condenseIndex, 0, genNewFlow());
         }
         
         // change \ and / to | when it's in the last position of the whole row
-        if (colomn === "/" || colomn === "\\") {
-          if (!(colomn === "/" && findBranchOut(nextRow) === -1)) {
-            if ((lastLinePos = Math.max(findColomn("|", currentRow), findColomn("*", currentRow))) !== -1
+        if (colomn === '/' || colomn === '\\') {
+          if (!(colomn === '/' && findBranchOut(nextRow) === -1)) {
+            if ((lastLinePos = Math.max(findColomn('|', currentRow), findColomn('*', currentRow))) !== -1
                 && (lastLinePos < colomnIndex - 1)) {
-              while (currentRow[++lastLinePos] === " ") {}
+              while (currentRow[++lastLinePos] === ' ') {}
               
               if (lastLinePos === colomnIndex) {
-                currentRow[colomnIndex] = "|";
+                currentRow[colomnIndex] = '|';
               }
             }
           }
         }
         
-        if (colomn === "*"
+        if (colomn === '*'
             && prevRow
-            && prevRow[condenseIndex + 1] === "\\") {
+            && prevRow[condenseIndex + 1] === '\\') {
           flows.splice(condenseIndex + 1, 1);
         }
         
-        if (colomn !== " ") {
+        if (colomn !== ' ') {
           ++condenseIndex;
         }
         
@@ -298,7 +298,7 @@ var gitGraph = function (canvas, rawGraphList, config) {
       }
       
       condenseCurrentLength = currentRow.filter(function (val) {
-        return (val !== " "  && val !== "_")
+        return (val !== ' '  && val !== '_')
       }).length;
       
       // do some clean up
@@ -313,7 +313,7 @@ var gitGraph = function (canvas, rawGraphList, config) {
         colomn = currentRow[colomnIndex];
         prevColomn = currentRow[colomnIndex - 1];
         
-        if (currentRow[colomnIndex] === " ") {
+        if (currentRow[colomnIndex] === ' ') {
           currentRow.splice(colomnIndex, 1);
           x += config.unitSize;
           
@@ -321,9 +321,9 @@ var gitGraph = function (canvas, rawGraphList, config) {
         }
         
         // inline interset
-        if ((colomn === "_" || colomn === "/")
-            && currentRow[colomnIndex - 1] === "|"
-            && currentRow[colomnIndex - 2] === "_") {
+        if ((colomn === '_' || colomn === '/')
+            && currentRow[colomnIndex - 1] === '|'
+            && currentRow[colomnIndex - 2] === '_') {
           inlineIntersect = true;
           
           tempFlow = flows.splice(colomnIndex - 2, 1)[0];
@@ -339,24 +339,24 @@ var gitGraph = function (canvas, rawGraphList, config) {
         color = flows[colomnIndex].color;
         
         switch (colomn) {
-          case "_" :
+          case '_' :
             drawLineRight(x, y, color);
             
             x += config.unitSize;
             break;
             
-          case "*" :
+          case '*' :
             drawNode(x, y, color);
             break;
             
-          case "|" :
+          case '|' :
             drawLineUp(x, y, color);
             break;
             
-          case "/" :
+          case '/' :
             if (prevColomn
-                && (prevColomn === "/"
-                  || prevColomn === " ")) {
+                && (prevColomn === '/'
+                  || prevColomn === ' ')) {
               x -= config.unitSize;
             }
             
@@ -365,7 +365,7 @@ var gitGraph = function (canvas, rawGraphList, config) {
             x += config.unitSize;
             break;
             
-          case "\\" :
+          case '\\' :
             drawLineIn(x, y, color);
             break;
         }
@@ -396,10 +396,10 @@ var gitGraph = function (canvas, rawGraphList, config) {
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS AS-IS
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * ARE DISCLAIMED.  IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
