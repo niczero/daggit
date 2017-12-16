@@ -156,7 +156,7 @@ var gitGraph = function (canvas, rawGraphList, config) {
   };
   
   var draw = function (graphList) {
-    var colomn, colomnIndex, prevColomn, condenseIndex;
+    var column, columnIndex, prevColomn, condenseIndex;
     var x, y;
     var color;
     var nodePos, outPos;
@@ -206,10 +206,10 @@ var gitGraph = function (canvas, rawGraphList, config) {
       if (prevRow) {
         if (!inlineIntersect) {
           // intersect might happen
-          for (colomnIndex = 0; colomnIndex < prevRowLength; colomnIndex++) {
-            if (prevRow[colomnIndex + 1] && (prevRow[colomnIndex] === '/' && prevRow[colomnIndex + 1] === '|')
-                || ((prevRow[colomnIndex] === '_' && prevRow[colomnIndex + 1] === '|') && (prevRow[colomnIndex + 2] === '/'))) {
-              flowSwapPos = colomnIndex;
+          for (columnIndex = 0; columnIndex < prevRowLength; columnIndex++) {
+            if (prevRow[columnIndex + 1] && (prevRow[columnIndex] === '/' && prevRow[columnIndex + 1] === '|')
+                || ((prevRow[columnIndex] === '_' && prevRow[columnIndex + 1] === '|') && (prevRow[columnIndex + 2] === '/'))) {
+              flowSwapPos = columnIndex;
               
               // swap two flow
               tempFlow = {id:flows[flowSwapPos].id, color:flows[flowSwapPos].color};
@@ -241,60 +241,60 @@ var gitGraph = function (canvas, rawGraphList, config) {
       } // done with the previous row
       
       prevRowLength = currentRow.length;  // store for next round
-      colomnIndex = 0;  // reset index
+      columnIndex = 0;  // reset index
       condenseIndex = 0;
       condensePrevLength = 0;
-      while (colomnIndex < currentRow.length) {
-        colomn = currentRow[colomnIndex];
+      while (columnIndex < currentRow.length) {
+        column = currentRow[columnIndex];
         
-        if (colomn !== ' ' && colomn !== '_') {
+        if (column !== ' ' && column !== '_') {
           ++condensePrevLength;
         }
         
-        if (colomn === ' '
-            && currentRow[colomnIndex + 1]
-            && currentRow[colomnIndex + 1] === '_'
-            && currentRow[colomnIndex - 1]
-            && currentRow[colomnIndex - 1] === '|') {
-          currentRow.splice(colomnIndex, 1);
+        if (column === ' '
+            && currentRow[columnIndex + 1]
+            && currentRow[columnIndex + 1] === '_'
+            && currentRow[columnIndex - 1]
+            && currentRow[columnIndex - 1] === '|') {
+          currentRow.splice(columnIndex, 1);
           
-          currentRow[colomnIndex] = '/';
-          colomn = '/';
+          currentRow[columnIndex] = '/';
+          column = '/';
         }
         
         // create new flow only when no intersetc happened
         if (flowSwapPos === -1
-            && colomn === '/'
-            && currentRow[colomnIndex - 1]
-            && currentRow[colomnIndex - 1] === '|') {
+            && column === '/'
+            && currentRow[columnIndex - 1]
+            && currentRow[columnIndex - 1] === '|') {
           flows.splice(condenseIndex, 0, genNewFlow());
         }
         
         // change \ and / to | when it's in the last position of the whole row
-        if (colomn === '/' || colomn === '\\') {
-          if (!(colomn === '/' && findBranchOut(nextRow) === -1)) {
+        if (column === '/' || column === '\\') {
+          if (!(column === '/' && findBranchOut(nextRow) === -1)) {
             if ((lastLinePos = Math.max(findColomn('|', currentRow), findColomn('*', currentRow))) !== -1
-                && (lastLinePos < colomnIndex - 1)) {
+                && (lastLinePos < columnIndex - 1)) {
               while (currentRow[++lastLinePos] === ' ') {}
               
-              if (lastLinePos === colomnIndex) {
-                currentRow[colomnIndex] = '|';
+              if (lastLinePos === columnIndex) {
+                currentRow[columnIndex] = '|';
               }
             }
           }
         }
         
-        if (colomn === '*'
+        if (column === '*'
             && prevRow
             && prevRow[condenseIndex + 1] === '\\') {
           flows.splice(condenseIndex + 1, 1);
         }
         
-        if (colomn !== ' ') {
+        if (column !== ' ') {
           ++condenseIndex;
         }
         
-        ++colomnIndex;
+        ++columnIndex;
       }
       
       condenseCurrentLength = currentRow.filter(function (val) {
@@ -306,39 +306,39 @@ var gitGraph = function (canvas, rawGraphList, config) {
         flows.splice(condenseCurrentLength, flows.length - condenseCurrentLength);
       }
       
-      colomnIndex = 0;
+      columnIndex = 0;
       
       // a little inline analysis and draw process
-      while (colomnIndex < currentRow.length) {
-        colomn = currentRow[colomnIndex];
-        prevColomn = currentRow[colomnIndex - 1];
+      while (columnIndex < currentRow.length) {
+        column = currentRow[columnIndex];
+        prevColomn = currentRow[columnIndex - 1];
         
-        if (currentRow[colomnIndex] === ' ') {
-          currentRow.splice(colomnIndex, 1);
+        if (currentRow[columnIndex] === ' ') {
+          currentRow.splice(columnIndex, 1);
           x += config.unitSize;
           
           continue;
         }
         
         // inline interset
-        if ((colomn === '_' || colomn === '/')
-            && currentRow[colomnIndex - 1] === '|'
-            && currentRow[colomnIndex - 2] === '_') {
+        if ((column === '_' || column === '/')
+            && currentRow[columnIndex - 1] === '|'
+            && currentRow[columnIndex - 2] === '_') {
           inlineIntersect = true;
           
-          tempFlow = flows.splice(colomnIndex - 2, 1)[0];
-          flows.splice(colomnIndex - 1, 0, tempFlow);
-          currentRow.splice(colomnIndex - 2, 1);
+          tempFlow = flows.splice(columnIndex - 2, 1)[0];
+          flows.splice(columnIndex - 1, 0, tempFlow);
+          currentRow.splice(columnIndex - 2, 1);
           
-          colomnIndex = colomnIndex - 1;
+          columnIndex = columnIndex - 1;
         }
         else {
           inlineIntersect = false;
         }
         
-        color = flows[colomnIndex].color;
+        color = flows[columnIndex].color;
         
-        switch (colomn) {
+        switch (column) {
           case '_' :
             drawLineRight(x, y, color);
             
@@ -370,7 +370,7 @@ var gitGraph = function (canvas, rawGraphList, config) {
             break;
         }
         
-        ++colomnIndex;
+        ++columnIndex;
       }
       
       y -= config.unitSize;
