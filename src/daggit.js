@@ -33,7 +33,7 @@ var gitGraph = function (canvas, rawGraphList, config) {
     var row;
     var midStr;
     
-    for (i = 0; i < l; i++) {
+    for (i = 0; i < l; ++i) {
       midStr = rawGraphList[i].replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
       
       maxWidth = Math.max(midStr.replace(/(\_|\s)/g, '').length, maxWidth);
@@ -63,7 +63,7 @@ var gitGraph = function (canvas, rawGraphList, config) {
     var chars = '0123456789ABCDEF';
     var stringLength = 6;
     var randomString = '', rnum, i;
-    for (i = 0; i < stringLength; i++) {
+    for (i = 0; i < stringLength; ++i) {
       rnum = Math.floor(Math.random() * chars.length);
       randomString += chars.substring(rnum, rnum + 1);
     }
@@ -207,8 +207,10 @@ var gitGraph = function (canvas, rawGraphList, config) {
         if (!inlineIntersect) {
           // intersect might happen
           for (columnIndex = 0; columnIndex < prevRowLength; ++columnIndex) {
-            if (prevRow[columnIndex + 1] && prevRow[columnIndex] === '/' && prevRow[columnIndex + 1] === '|'
-                || prevRow[columnIndex] === '_' && prevRow[columnIndex + 1] === '|' && prevRow[columnIndex + 2] === '/') {
+            if (prevRow[columnIndex + 1] && prevRow[columnIndex] === '/'
+                && prevRow[columnIndex + 1] === '|'
+              || prevRow[columnIndex] === '_' && prevRow[columnIndex + 1] === '|'
+                && prevRow[columnIndex + 2] === '/') {
               flowSwapPos = columnIndex;
               
               // swap two flows
