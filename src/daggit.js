@@ -60,15 +60,8 @@ var gitGraph = function (canvas, rawGraphList, config) {
   };
   
   var genRandomStr = function () {
-    var chars = '0123456789ABCDEF';
-    var stringLength = 6;
-    var randomString = '', rnum, i;
-    for (i = 0; i < stringLength; ++i) {
-      rnum = Math.floor(Math.random() * chars.length);
-      randomString += chars.substring(rnum, rnum + 1);
-    }
-    
-    return randomString;
+    var rnum = Math.floor(Math.random() * colours.length);
+    return colours[rnum];
   };
   
   var findFlow = function (id) {
@@ -378,6 +371,107 @@ var gitGraph = function (canvas, rawGraphList, config) {
     }
   };
   
+  var colours = [
+    "BCD9EA",
+    "8BBDD9",
+    "5BA4CF",
+    "298FCA",
+    "0079BF",
+    "026AA7",
+    "055A8C",
+    "094C72",
+    "0C3953",
+    "D6ECD2",
+    "B7DDB0",
+    "99D18F",
+    "7BC86C",
+    "61BD4F",
+    "5AAC44",
+    "519839",
+    "49852E",
+    "3F6F21",
+    "FCE8D2",
+    "FAD8B0",
+    "FDC788",
+    "FFB968",
+    "FFAB4A",
+    "E99E40",
+    "D29034",
+    "BB8129",
+    "A0711C",
+    "F5D3CE",
+    "EFB3AB",
+    "EC9488",
+    "EF7564",
+    "EB5A46",
+    "CF513D",
+    "B04632",
+    "933B27",
+    "6E2F1A",
+    "FAF3C0",
+    "F5EA92",
+    "F3E260",
+    "F5DD29",
+    "F2D600",
+    "E6C60D",
+    "D9B51C",
+    "CCA42B",
+    "BD903C",
+    "DFC0EB",
+    "D5A6E6",
+    "CD8DE5",
+    "C377E0",
+    "A86CC1",
+    "89609E",
+    "6C547B",
+    "484553",
+    "FCDEF0",
+    "FAC6E5",
+    "FFB0E1",
+    "FF95D6",
+    "FF80CE",
+    "E76EB1",
+    "CD5A91",
+    "B44772",
+    "96304C",
+    "BDECF3",
+    "8FDFEB",
+    "5DD3E5",
+    "29CCE5",
+    "00C2E0",
+    "00AECC",
+    "0098B7",
+    "0082A0",
+    "006988",
+    "D3F6E4",
+    "B3F1D0",
+    "90ECC1",
+    "6DECA9",
+    "51E898",
+    "4FD683",
+    "4DC26B",
+    "4CAF54",
+    "4A9839",
+    "FFFFFF",
+    "EDEFF0",
+    "E2E4E6",
+    "D6DADC",
+    "838C91",
+    "676D70",
+    "333333",
+    "222222",
+    "000000",
+    "D2D7E5",
+    "B2B9D0",
+    "838FB5",
+    "6170A1",
+    "42548E",
+    "3E4D80",
+    "3A476F",
+    "36405F",
+    "30364C"
+  ];
+
   init();
   draw(graphList);
 };
