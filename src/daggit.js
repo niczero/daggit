@@ -6,10 +6,15 @@ var gitGraph = function (canvas, rawGraphList, config) {
   if (typeof config === 'undefined') {
     config = {
       unitSize: 16,
-      lineWidth: 5,
+      lineWidth: 4,
       nodeRadius: 5
     };
   }
+  var theme = {
+    nodeInnerColour: '#FFFFFF',
+    nodeOuterColour: '#000000',
+    nodeShadowColour: 'rgba(0, 0, 0, 0.5)'
+  };
   
   var flows = [];
   var graphList = [];
@@ -108,7 +113,7 @@ var gitGraph = function (canvas, rawGraphList, config) {
   var drawLineRight = function (x, y, color) {
     ctx.strokeStyle = color;
     ctx.beginPath();
-    ctx.moveTo(x, y + config.unitSize / 2);
+    ctx.moveTo(x,                   y + config.unitSize / 2);
     ctx.lineTo(x + config.unitSize, y + config.unitSize / 2);
     ctx.stroke();
   };
@@ -126,9 +131,19 @@ var gitGraph = function (canvas, rawGraphList, config) {
     
     drawLineUp(x, y, color);
     
+    ctx.save();
     ctx.beginPath();
+    ctx.fillStyle = theme.nodeOuterColour;
     ctx.arc(x, y, config.nodeRadius, 0, Math.PI * 2, true);
+    ctx.shadowOffsetX = config.nodeRadius / 2;
+    ctx.shadowBlur = config.nodeRadius;
+    ctx.shadowColor = theme.nodeShadowColour;
     ctx.fill();
+    ctx.beginPath();
+    ctx.fillStyle = theme.nodeInnerColour;
+    ctx.arc(x, y, config.nodeRadius / 2, 0, Math.PI * 2, true);
+    ctx.fill();
+    ctx.restore();
   };
   
   var drawLineIn = function (x, y, color) {
@@ -136,7 +151,11 @@ var gitGraph = function (canvas, rawGraphList, config) {
     
     ctx.beginPath();
     ctx.moveTo(x + config.unitSize, y + config.unitSize / 2);
-    ctx.lineTo(x, y - config.unitSize / 2);
+    ctx.bezierCurveTo(
+      x + config.unitSize, y,
+      x,                   y,
+      x,                   y - config.unitSize / 2
+    );
     ctx.stroke();
   };
   
@@ -144,7 +163,11 @@ var gitGraph = function (canvas, rawGraphList, config) {
     ctx.strokeStyle = color;
     ctx.beginPath();
     ctx.moveTo(x, y + config.unitSize / 2);
-    ctx.lineTo(x + config.unitSize, y - config.unitSize / 2);
+    ctx.bezierCurveTo(
+      x,                   y,
+      x + config.unitSize, y,
+      x + config.unitSize, y - config.unitSize / 2
+    );
     ctx.stroke();
   };
   
