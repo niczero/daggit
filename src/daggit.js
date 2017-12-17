@@ -5,9 +5,9 @@ var gitGraph = function (canvas, rawGraphList, config) {
   
   if (typeof config === 'undefined') {
     config = {
-      unitSize: 20,
-      lineWidth: 3,
-      nodeRadius: 4
+      unitSize: 16,
+      lineWidth: 5,
+      nodeRadius: 5
     };
   }
   
@@ -169,11 +169,11 @@ var gitGraph = function (canvas, rawGraphList, config) {
       }
     }
     
-    y = (canvas.height / ratio) - config.unitSize * 0.5;
+    y = (canvas.height / ratio) - config.unitSize / 2;
     
     // iterate
     for (i = 0, l = graphList.length; i < l; ++i) {
-      x = config.unitSize * 0.5;
+      x = config.unitSize / 2;
       
       currentRow = graphList[i];
       nextRow = graphList[i + 1];
