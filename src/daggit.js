@@ -12,46 +12,52 @@
       return;
     }
 
-    if (typeof config === 'undefined') {
-      self.config = {
-        unitSize: 16,
-        lineWidth: 4,
-        nodeRadius: 5
-      };
+    self.config = config || {};
+    self.config.unitSize   = self.config.unitSize || 16;
+    self.config.lineWidth  = self.config.lineWidth || 4;
+
+    let defaultLightPalette = [ 'D29034', '4DC26B', '026AA7', 'A86CC1',
+            '484553', '30364C', '000000', 'EB5A46', '933B27', 'B44772',
+            '0079BF', '42548E', '49852E', 'CF513D', 'CD5A91', 'C377E0',
+            '61BD4F', 'E99E40', 'E6C60D', '4CAF54', 'FFAB4A', '00AECC',
+            'F2D600', '51E898', '3A476F', '222222', '094C72', 'A0711C',
+            '6E2F1A', '3E4D80', '00C2E0', 'BB8129', 'FF80CE', '6C547B',
+            'CCA42B', 'D9B51C', '0C3953', '3F6F21', '519839', '333333',
+            '5AAC44', '0082A0', '055A8C', '4A9839', '006988', '36405F',
+            '676D70', 'E76EB1', 'BD903C', '96304C', '0098B7', '4FD683',
+            '89609E', 'B04632' ],
+        defaultDarkPalette = [ '298FCA', 'EC9488', 'D6DADC', '4FD683', 'E6C60D',
+            'F5DD29', 'B3F1D0', 'FF95D6', 'CF513D', '0079BF', 'FDC788',
+            'F2D600', 'DFC0EB', 'B7DDB0', 'E76EB1', '7BC86C', '3E4D80',
+            'F3E260', '838FB5', '8FDFEB', '6170A1', 'B2B9D0', 'D5A6E6',
+            '676D70', '5AAC44', '6DECA9', '90ECC1', 'EFB3AB', '838C91',
+            'E2E4E6', '61BD4F', 'CD8DE5', '333333', 'FFAB4A', 'F5EA92',
+            'FAC6E5', 'A86CC1', 'FFB968', '42548E', '29CCE5', '8BBDD9',
+            '99D18F', '51E898', '00AECC', '5DD3E5', 'E99E40', '5BA4CF',
+            '00C2E0', 'FF80CE', 'EF7564', 'FFB0E1', 'FAD8B0', 'C377E0',
+            '026AA7', 'EB5A46' ];
+    self.config.theme = self.config.theme || {};
+    if (! self.config.theme.palette) {
+      if ((self.config.theme.name || 'light') === 'light') {
+        self.config.theme.palette = defaultLightPalette;
+
+        self.config.theme.node = self.config.theme.node || {
+          inner: 'FFFFFF',
+          outer: '000000',
+          shadow: 'rgba(250, 250, 250, 0.9)'
+        };
+      }
+      else {
+        self.config.theme.palette = defaultDarkPalette;
+
+        self.config.theme.node = self.config.theme.node || {
+          inner: '000000',
+          outer: 'FFFFFF',
+          shadow: 'rgba(200, 200, 200, 0.4)'
+        };
+      }
     }
-    else {
-      self.config = config;
-    }
-    self.theme = {
-      nodeInnerColour: '#FFFFFF',
-      nodeOuterColour: '#000000',
-      nodeShadowColour: 'rgba(0, 0, 0, 0.5)'
-    };
-    if (typeof config.theme === 'undefined' || config.theme === 'light') {
-      self.config.colours = [ '0079BF', '026AA7', '055A8C', '094C72', '0C3953',
-        '61BD4F', '5AAC44', '519839', '49852E', '3F6F21', 'FFAB4A', 'E99E40',
-        'D29034', 'BB8129', 'A0711C', 'EB5A46', 'CF513D', 'B04632', '933B27',
-        '6E2F1A', 'F2D600', 'E6C60D', 'D9B51C', 'CCA42B', 'BD903C', 'C377E0',
-        'A86CC1', '89609E', '6C547B', '484553', 'FF80CE', 'E76EB1', 'CD5A91',
-        'B44772', '96304C', '00C2E0', '00AECC', '0098B7', '0082A0', '006988',
-        '51E898', '4FD683', '4DC26B', '4CAF54', '4A9839', '676D70', '333333',
-        '222222', '000000', '42548E', '3E4D80', '3A476F', '36405F', '30364C' ];
-      self.theme.nodeInnerColour = '#FFFFFF';
-      self.theme.nodeOuterColour = '#000000';
-    }
-    else {
-      self.config.colours = [ 'BCD9EA', '8BBDD9', '5BA4CF', '298FCA', '0079BF',
-        'D6ECD2', 'B7DDB0', '99D18F', '7BC86C', '61BD4F', 'FCE8D2', 'FAD8B0',
-        'FDC788', 'FFB968', 'FFAB4A', 'F5D3CE', 'EFB3AB', 'EC9488', 'EF7564',
-        'EB5A46', 'FAF3C0', 'F5EA92', 'F3E260', 'F5DD29', 'F2D600', 'EDDBF4',
-        'DFC0EB', 'D5A6E6', 'CD8DE5', 'C377E0', 'FCDEF0', 'FAC6E5', 'FFB0E1',
-        'FF95D6', 'FF80CE', 'BDECF3', '8FDFEB', '5DD3E5', '29CCE5', '00C2E0',
-        'D3F6E4', 'B3F1D0', '90ECC1', '6DECA9', '51E898', 'EDEFF0', 'E2E4E6',
-        'D6DADC', '838C91', '676D70', 'D2D7E5', 'B2B9D0', '838FB5', '6170A1',
-        '42548E' ];
-      self.theme.nodeInnerColour = '#000000';
-      self.theme.nodeOuterColour = '#FFFFFF';
-    }
+    self.config.theme.node.radius = self.config.theme.node.radius || 5;
 
     let ctx = self.ctx = canvas.getContext('2d');
 
@@ -97,8 +103,8 @@
   }
 
   function genRandomStr () {
-    let rnum = Math.floor(Math.random() * self.config.colours.length);
-    return self.config.colours[rnum];
+    let rnum = Math.floor(Math.random() * self.config.palette.length);
+    return self.config.palette[rnum];
   }
 
   function findFlow (id) {
@@ -132,13 +138,10 @@
   }
 
   function genNewFlow () {
-    let newId;
+    let i = flows.length % self.config.theme.palette.length;
+    let newId = self.config.theme.palette[i];
 
-    do {
-      newId = genRandomStr();
-    } while (findFlow(newId) !== -1);
-
-    return {id:newId, color:'#' + newId};
+    return {id: newId, color: '#' + newId};
   }
 
   // draw method
@@ -160,24 +163,29 @@
     ctx.stroke();
   }
 
-  function drawNode (self, x, y, color) {
+  function drawNode (self, x, y, color, selected) {
     let ctx = self.ctx;
     ctx.strokeStyle = color;
 
     drawLineUp(self, x, y, color);
 
+    let cnode = self.config.theme.node;
     ctx.save();
     ctx.beginPath();
-    ctx.fillStyle = self.theme.nodeOuterColour;
-    ctx.arc(x, y, self.config.nodeRadius, 0, Math.PI * 2, true);
-    ctx.shadowOffsetX = self.config.nodeRadius / 2;
-    ctx.shadowBlur = self.config.nodeRadius;
-    ctx.shadowColor = self.theme.nodeShadowColour;
+    ctx.fillStyle = '#'+ cnode.outer;
+    ctx.arc(x, y, cnode.radius, 0, Math.PI * 2);
+    if (selected) {
+      ctx.shadowOffsetX = cnode.radius / 2;
+      ctx.shadowBlur = cnode.radius;
+      ctx.shadowColor = cnode.shadow;
+    }
     ctx.fill();
-    ctx.beginPath();
-    ctx.fillStyle = self.theme.nodeInnerColour;
-    ctx.arc(x, y, self.config.nodeRadius / 2, 0, Math.PI * 2, true);
-    ctx.fill();
+    if (! selected) {
+      ctx.beginPath();
+      ctx.fillStyle = '#'+ cnode.inner;
+      ctx.arc(x, y, cnode.radius / 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.restore();
   }
 
@@ -377,6 +385,10 @@
 
           case '*' :
             drawNode(self, x, y, color);
+            break;
+
+          case '@' :
+            drawNode(self, x, y, color, true);
             break;
 
           case '|' :
