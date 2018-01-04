@@ -17,7 +17,7 @@ daggit.js is a tool for converting 'git log --graph' output into a canvas image.
 ### Licence
 
   Copyright (c) 2011--12, Terrence Lee <kill889@gmail.com>
-  Copyright (c) 2017, Nic Sandfield <niczero@wow.com>
+  Copyright (c) 2017--18, Nic Sandfield <niczero@wow.com>
   All rights reserved.
   
   Redistribution and use in source and binary forms, with or without

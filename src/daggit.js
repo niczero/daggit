@@ -1,10 +1,9 @@
 (function () {
-
   'use strict';
 
   var self = {},
-      flows = [],
-      graphList = [];
+      tracks = [],
+      grid = [];
 
   function daggit (canvas, rawGraphList, config) {
 
@@ -63,28 +62,28 @@
 
     let devicePixelRatio = window.devicePixelRatio || 1,
         backingStoreRatio = ctx.webkitBackingStorePixelRatio
-          || ctx.mozBackingStorePixelRatio
-          || ctx.msBackingStorePixelRatio
-          || ctx.oBackingStorePixelRatio
-          || ctx.backingStorePixelRatio
-          || 1;
+            || ctx.mozBackingStorePixelRatio
+            || ctx.msBackingStorePixelRatio
+            || ctx.oBackingStorePixelRatio
+            || ctx.backingStorePixelRatio
+            || 1;
 
     self.ratio = devicePixelRatio / backingStoreRatio;
 
-    let maxWidth = 0;
+    let maxWidth = 0,
+        height = rawGraphList.length;
 
-    for (let i = 0, len = rawGraphList.length; i < len; ++i) {
-      let midStr = rawGraphList[i].replace(/^\s+|\s+$/g, '').replace(/\s\s+/g, ' ');
+    for (let r = 0; r < height; ++r) {
+      let columnar = rawGraphList[r].replace(/^\s+|\s+$/g, '');
 
-      maxWidth = Math.max(midStr.replace(/(_|\s)/g, '').length, maxWidth);
+      let width = columnar.replace(/(\s|_|-|\.)/g, '').length;
+      maxWidth = width > maxWidth ? width : maxWidth;
 
-      let row = midStr.split('');
-
-      graphList.unshift(row);
+      grid.unshift(columnar.split(''));  // reverse order of rows
     }
 
     let w = maxWidth * self.config.unitSize,
-        h = graphList.length * self.config.unitSize;
+        h = height * self.config.unitSize;
 
     canvas.width = w * self.ratio;
     canvas.height = h * self.ratio;
@@ -99,55 +98,113 @@
 
     ctx.scale(self.ratio, self.ratio);
 
-    draw(self, graphList);
+    self.used = 0;
+    draw(self, grid);
   }
 
-  function genRandomStr () {
-    let rnum = Math.floor(Math.random() * self.config.palette.length);
-    return self.config.palette[rnum];
+  function newTrack (self) {
+    let t = self.used++ % self.config.theme.palette.length;
+    return self.config.theme.palette[t];
   }
 
-  function findFlow (id) {
-    let i = flows.length;
-
-    while (i-- && flows[i].id !== id) {}
-
-    return i;
+  function drawArcRightSlopeRight (self, x, y, color) {
+    let ctx = self.ctx;
+    ctx.strokeStyle = '#'+ color;
+    ctx.beginPath();
+    ctx.moveTo(x, y + self.config.unitSize / 2);
+    ctx.bezierCurveTo(
+      x + self.config.unitSize / 4, y + self.config.unitSize / 2,
+      x + self.config.unitSize,     y,
+      x + self.config.unitSize,     y - self.config.unitSize / 2
+    );
+    ctx.stroke();
   }
 
-  function findColumn (symbol, row) {
-    let i = row.length;
+  function drawArcRightUp (self, x, y, color) {
+    let ctx = self.ctx;
+    ctx.strokeStyle = '#'+ color;
 
-    while (i-- && row[i] !== symbol) {}
-
-    return i;
+    ctx.beginPath();
+    ctx.moveTo(x, y + self.config.unitSize / 2);
+    ctx.bezierCurveTo(
+      x + self.config.unitSize / 2, y + self.config.unitSize / 2,
+      x + self.config.unitSize, y,
+      x + self.config.unitSize, y - self.config.unitSize / 2
+    );
+    ctx.stroke();
   }
 
-  function findBranchOut (row) {
-    if (!row) {
-      return -1
-    }
-
-    let i = row.length;
-
-    while (i--
-      && !(row[i - 1] && row[i] === '/' && row[i - 1] === '|')
-      && !(row[i - 2] && row[i] === '_' && row[i - 2] === '|')) {}
-
-    return i;
+  function drawArcUpRight (self, x, y, color) {
+    let ctx = self.ctx;
+    ctx.strokeStyle = '#'+ color;
+    ctx.beginPath();
+    ctx.moveTo(x, y + self.config.unitSize / 2);
+    ctx.bezierCurveTo(
+      x,                            y,
+      x + self.config.unitSize / 2, y - self.config.unitSize / 2,
+      x + self.config.unitSize,     y - self.config.unitSize / 2
+    );
+    ctx.stroke();
   }
 
-  function genNewFlow () {
-    let i = flows.length % self.config.theme.palette.length;
-    let newId = self.config.theme.palette[i];
+  function drawDiagLeft (self, x, y, color) {
+    let ctx = self.ctx;
+    ctx.strokeStyle = '#'+ color;
 
-    return {id: newId, color: '#' + newId};
+    ctx.beginPath();
+    ctx.moveTo(x, y + self.config.unitSize / 2);
+    ctx.bezierCurveTo(
+      x - self.config.unitSize / 4, y,
+      x - self.config.unitSize / 4, y,
+      x - self.config.unitSize / 2, y - self.config.unitSize / 2
+    );
+    ctx.stroke();
   }
 
-  // draw method
+  function drawDiagLeftLast (self, x, y, color) {
+    let ctx = self.ctx;
+    ctx.strokeStyle = '#'+ color;
+
+    ctx.beginPath();
+    ctx.moveTo(x, y + self.config.unitSize / 2);
+    ctx.bezierCurveTo(
+      x - self.config.unitSize / 4, y,
+      x - self.config.unitSize / 2, y,
+      x - self.config.unitSize / 2, y - self.config.unitSize / 2
+    );
+    ctx.stroke();
+  }
+
+  function drawDiagRight (self, x, y, color) {
+    let ctx = self.ctx;
+    ctx.strokeStyle = '#'+ color;
+
+    ctx.beginPath();
+    ctx.moveTo(x, y + self.config.unitSize / 2);
+    ctx.bezierCurveTo(
+      x,                            y,
+      x + self.config.unitSize / 4, y,
+      x + self.config.unitSize / 2, y - self.config.unitSize / 2
+    );
+    ctx.stroke();
+  }
+
+  function drawLineLeft (self, x, y, color) {
+    let ctx = self.ctx;
+    ctx.strokeStyle = '#'+ color;
+    ctx.beginPath();
+    ctx.moveTo(x, y + self.config.unitSize / 2);
+    ctx.bezierCurveTo(
+      x,                            y,
+      x - self.config.unitSize / 2, y,
+      x - self.config.unitSize,     y
+    );
+    ctx.stroke();
+  }
+
   function drawLineRight (self, x, y, color) {
     let ctx = self.ctx;
-    ctx.strokeStyle = color;
+    ctx.strokeStyle = '#'+ color;
     ctx.beginPath();
     ctx.moveTo(x,                        y + self.config.unitSize / 2);
     ctx.lineTo(x + self.config.unitSize, y + self.config.unitSize / 2);
@@ -156,7 +213,7 @@
 
   function drawLineUp (self, x, y, color) {
     let ctx = self.ctx;
-    ctx.strokeStyle = color;
+    ctx.strokeStyle = '#'+ color;
     ctx.beginPath();
     ctx.moveTo(x, y + self.config.unitSize / 2);
     ctx.lineTo(x, y - self.config.unitSize / 2);
@@ -165,11 +222,12 @@
 
   function drawNode (self, x, y, color, selected) {
     let ctx = self.ctx;
-    ctx.strokeStyle = color;
+    ctx.strokeStyle = '#'+ color;
 
     drawLineUp(self, x, y, color);
 
     let cnode = self.config.theme.node;
+
     ctx.save();
     ctx.beginPath();
     ctx.fillStyle = '#'+ cnode.outer;
@@ -189,9 +247,9 @@
     ctx.restore();
   }
 
-  function drawLineIn (self, x, y, color) {
+  function drawSlopeLeft (self, x, y, color) {
     let ctx = self.ctx;
-    ctx.strokeStyle = color;
+    ctx.strokeStyle = '#'+ color;
 
     ctx.beginPath();
     ctx.moveTo(x + self.config.unitSize, y + self.config.unitSize / 2);
@@ -203,9 +261,9 @@
     ctx.stroke();
   }
 
-  function drawLineOut (self, x, y, color) {
+  function drawSlopeRight (self, x, y, color) {
     let ctx = self.ctx;
-    ctx.strokeStyle = color;
+    ctx.strokeStyle = '#'+ color;
     ctx.beginPath();
     ctx.moveTo(x, y + self.config.unitSize / 2);
     ctx.bezierCurveTo(
@@ -216,205 +274,237 @@
     ctx.stroke();
   }
 
-  function draw (self, graphList) {
+  function drawSlopeRightFirst (self, x, y, color) {
+    let ctx = self.ctx;
+    ctx.strokeStyle = '#'+ color;
+    ctx.beginPath();
+    ctx.moveTo(x, y + self.config.unitSize / 2);
+    ctx.bezierCurveTo(
+      x,                        y,
+      x + self.config.unitSize / 2, y,
+      x + self.config.unitSize, y - self.config.unitSize / 2
+    );
+    ctx.stroke();
+  }
 
-    // initiate for first row
-    for (let i = 0, len = graphList[0].length; i < len; ++i) {
-      if (graphList[0][i] !== '_' && graphList[0][i] !== ' ') {
-        flows.push(genNewFlow());
+  function drawSlopeRightLast (self, x, y, color) {
+    let ctx = self.ctx;
+    ctx.strokeStyle = '#'+ color;
+    ctx.beginPath();
+    ctx.moveTo(x, y + self.config.unitSize / 2);
+    ctx.bezierCurveTo(
+      x + self.config.unitSize / 2, y,
+      x + self.config.unitSize, y,
+      x + self.config.unitSize, y - self.config.unitSize / 2
+    );
+    ctx.stroke();
+  }
+
+  function draw (self, grid) {
+
+    // Initialise for first row
+    for (let c = 0, width = grid[0].length; c < width; ++c) {
+      let cell = grid[0][c];
+      if (cell !== ' ' && cell !== '_' && cell !== '-' && cell !== '.') {
+        tracks.push(newTrack(self));
       }
     }
 
-    let y = (self.canvas.height / self.ratio) - self.config.unitSize / 2;
+    let y = (self.canvas.height / self.ratio) - self.config.unitSize / 2,
+        expectCrossover;
 
-    // iterate
-    let prevRowLength = 0,
-        condensePrevLength = 0,
-        inlineIntersect = false;
-    for (let i = 0, len = graphList.length; i < len; ++i) {
+    // Iterate over all rows
+    for (let r = 0, height = grid.length; r < height; ++r) {
+
       let x = self.config.unitSize / 2,
-          currentRow = graphList[i],
-          nextRow = graphList[i + 1],
-          prevRow = graphList[i - 1],
-          flowSwapPos = -1;
+          row = grid[r],
+          maybeCrossover = expectCrossover;
+      expectCrossover = false;
 
-      let condenseCurrentLength = currentRow.filter(function (val) {
-        return (val !== ' ' && val !== '_')
-      }).length;
+      // Iterate over all columns of the row
+      let track = 0;
+      for (let c = 0, width = row.length; c < width; ++c) {
+        let cell = row[c],
+            prevCell = row[c - 1];
 
-      // pre process begin
-      // use last row for analysing
-      if (prevRow) {
-        if (!inlineIntersect) {
-          // intersect might happen
-          for (let columnIndex = 0; columnIndex < prevRowLength; ++columnIndex) {
-            if (prevRow[columnIndex + 1] && prevRow[columnIndex] === '/' && prevRow[columnIndex + 1] === '|'
-                || prevRow[columnIndex] === '_' && prevRow[columnIndex + 1] === '|' && prevRow[columnIndex + 2] === '/') {
-              flowSwapPos = columnIndex;
+        // Massage certain patterns
 
-              // swap two flows
-              let tempFlow = {id:flows[flowSwapPos].id, color:flows[flowSwapPos].color};
-
-              flows[flowSwapPos].id = flows[flowSwapPos + 1].id;
-              flows[flowSwapPos].color = flows[flowSwapPos + 1].color;
-
-              flows[flowSwapPos + 1].id = tempFlow.id;
-              flows[flowSwapPos + 1].color = tempFlow.color;
-            }
+        // " "
+        if (cell === ' ') {
+          if (c && prevCell !== '/') {
+            x += self.config.unitSize;
           }
-        }
-
-        let nodePos;
-        if (condensePrevLength < condenseCurrentLength
-            && (nodePos = findColumn('*', currentRow)) !== -1
-            && findColumn('_', currentRow) === -1) {
-          flows.splice(nodePos - 1, 0, genNewFlow());
-        }
-
-        if (prevRowLength > currentRow.length
-            && (nodePos = findColumn('*', prevRow)) !== -1) {
-
-          if (findColumn('_', currentRow) === -1
-              && findColumn('/', currentRow) === -1
-              && findColumn('\\', currentRow) === -1) {
-            flows.splice(nodePos + 1, 1);
-          }
-        }
-      } // done with the previous row
-
-      prevRowLength = currentRow.length;  // store for next round
-      let condenseIndex = 0;
-      condensePrevLength = 0;
-      for (let columnIndex = 0; columnIndex < currentRow.length; ++columnIndex) {
-        let column = currentRow[columnIndex];
-
-        if (column !== ' ' && column !== '_') {
-          ++condensePrevLength;
-        }
-
-        if (column === ' '
-            && currentRow[columnIndex + 1]
-            && currentRow[columnIndex + 1] === '_'
-            && currentRow[columnIndex - 1]
-            && currentRow[columnIndex - 1] === '|') {
-          currentRow.splice(columnIndex, 1);
-
-          currentRow[columnIndex] = '/';
-          column = '/';
-        }
-
-        // create new flow only when no intersetc happened
-        if (flowSwapPos === -1
-            && column === '/'
-            && currentRow[columnIndex - 1]
-            && currentRow[columnIndex - 1] === '|') {
-          flows.splice(condenseIndex, 0, genNewFlow());
-        }
-
-        // change \ and / to | when it's in the last position of the whole row
-        if (column === '/' || column === '\\') {
-          if (!(column === '/' && findBranchOut(nextRow) === -1)) {
-            let lastLinePos;
-            if ((lastLinePos = Math.max(findColumn('|', currentRow), findColumn('*', currentRow)) ) !== -1
-                && lastLinePos < columnIndex - 1) {
-              while (currentRow[++lastLinePos] === ' ') {}
-
-              if (lastLinePos === columnIndex) {
-                currentRow[columnIndex] = '|';
-              }
-            }
-          }
-        }
-
-        if (column === '*'
-            && prevRow
-            && prevRow[condenseIndex + 1] === '\\') {
-          flows.splice(condenseIndex + 1, 1);
-        }
-
-        if (column !== ' ') {
-          ++condenseIndex;
-        }
-      }
-
-      condenseCurrentLength = currentRow.filter(function (val) {
-        return (val !== ' ' && val !== '_')
-      }).length;
-
-      // do some clean up
-      if (flows.length > condenseCurrentLength) {
-        flows.splice(condenseCurrentLength, flows.length - condenseCurrentLength);
-      }
-
-      // a little inline analysis and draw process
-      for (let columnIndex = 0; columnIndex < currentRow.length; ) {
-        let column = currentRow[columnIndex],
-            prevColumn = currentRow[columnIndex - 1];
-
-        if (currentRow[columnIndex] === ' ') {
-          currentRow.splice(columnIndex, 1);
-          x += self.config.unitSize;
-
           continue;
         }
 
-        // inline intersect
-        if ((column === '_' || column === '/')
-            && currentRow[columnIndex - 1] === '|'
-            && currentRow[columnIndex - 2] === '_') {
-          inlineIntersect = true;
+        // "_" / "/"
+        // For crossovers, one track jumps over another
+        // Check for "_|_" or "_|/"
+        else if ((cell === '_' || cell === '/')
+            && prevCell === '|'
+            && row[c - 2] === '_') {
 
-          let tempFlow = flows.splice(columnIndex - 2, 1)[0];
-          flows.splice(columnIndex - 1, 0, tempFlow);
-          currentRow.splice(columnIndex - 2, 1);
-
-          columnIndex = columnIndex - 1;
-        }
-        else {
-          inlineIntersect = false;
+          // crossover => swap tracks
+          let temp = tracks[track - 2];
+          tracks[track - 2] = tracks[track - 1];
+          tracks[track - 1] = temp;
+          --track;
         }
 
-        let color = flows[columnIndex].color;
+        // "|"
+        // Check for "|/" or "|_" or "/|"
+        else if (cell === '|') {
+          if (maybeCrossover && prevCell !== '_'
+              && (row[c + 1] === '/' || row[c + 1] === '_')) {
+            // crossover => swap tracks
+            let temp = tracks[track];
+            tracks[track] = tracks[track + 1];
+            tracks[track + 1] = temp;
+          }
+          else if (prevCell === '/') {
+            expectCrossover = true;
+          }
+        }
 
-        switch (column) {
-          case '_' :
-            drawLineRight(self, x, y, color);
+        // "/"
+        // Spawn a new track "|/" (that is not part of a crossover)
+        else if (!maybeCrossover && cell === '/' && c && row[c - 1] === '|') {
+          tracks.splice(track, 0, newTrack(self));
+        }
 
-            x += self.config.unitSize;
-            break;
+        // "*" / "@"
+        // Merged tracks disappear
+        else if ((cell === '*' || cell === '@') && r && c < width - 1
+            && grid[r - 1][c + 1] === '\\') {
+          tracks.splice(track + 1, 1);
+        }
 
-          case '*' :
+        // "-"
+        // Multi-merge
+        else if (cell === '-' && row[c + 1] === '-') {
+          row[c + 1] = ' ';
+        }
+
+        // "\"
+        else if (cell === '\\') {
+//          let z = grid[r + 1] && c ? grid[r + 1][c - 1] : '';
+//          if (z === '\\') {
+//          }
+        }
+
+        let color = tracks[track];
+
+        switch (cell) {
+          case '*':
             drawNode(self, x, y, color);
             break;
 
-          case '@' :
+          case '@':
             drawNode(self, x, y, color, true);
             break;
 
-          case '|' :
+          case '|':
             drawLineUp(self, x, y, color);
             break;
 
-          case '/' :
-            if (prevColumn
-                && (prevColumn === '/' || prevColumn === ' ')) {
+          case '/':
+            if (grid[r + 1] && grid[r + 1][c + 1] === '/') {
+              // Leads straight into another "/"
+              if (row[c - 2] === '_') {
+                // Coming from a horizontal crossover
+                grid[r + 1][c + 1] = '|';  // modify the structure for space
+
+                drawArcRightUp(self, x, y, color);
+              }
+              else {
+                let i = c;
+                while (row[--i] === ' ') {}
+                x -= (c - 1 - i) * self.config.unitSize / 2;
+
+                drawDiagRight(self, x, y, color);
+              }
               x -= self.config.unitSize;
             }
-
-            drawLineOut(self, x, y, color);
-
+            else if (grid[r + 1] && grid[r + 1][c + 2] === '_') {
+              drawArcUpRight(self, x, y, color);
+            }
+            else if (row[c - 2] === '_') {
+              drawArcRightSlopeRight(self, x, y, color);
+            }
+            else if (row[c + 1] === '|'
+                && grid[r + 1] && grid[r + 1][c + 2] === '/'
+                && row[c - 1] === '|'
+                && grid[r - 1] && grid[r - 1][c - 2] === '/') {
+              // Internal diagonal crossover
+              drawSlopeRight(self, x, y, color);
+            }
+            else if (row[c + 1] === '|'
+                && grid[r + 1] && grid[r + 1][c + 2] === '/') {
+              // Initial diagonal crossover
+              drawSlopeRightFirst(self, x, y, color);
+            }
+            else if (row[c - 1] === '|'
+                && grid[r - 1] && grid[r - 1][c - 2] === '/') {
+              // Ultimate diagonal crossover
+              drawSlopeRightLast(self, x, y, color);
+            }
+            else {
+              // Simple slope
+              drawSlopeRight(self, x, y, color);
+            }
             x += self.config.unitSize;
             break;
 
-          case '\\' :
-            drawLineIn(self, x, y, color);
+          case '\\':
+            if (grid[r - 1] && grid[r - 1][c + 1] === '\\') {
+              let i = c;
+              while (row[--i] === ' ') {}
+              x -= (c - 2 - i) * self.config.unitSize / 2;
+
+              if (grid[r + 1] && grid[r + 1][c - 1] !== '\\') {
+                drawDiagLeftLast(self, x, y, color);
+              }
+              else {
+                drawDiagLeft(self, x, y, color);
+              }
+            }
+            else {
+              drawSlopeLeft(self, x, y, color);
+            }
             break;
+
+          case '_':
+            drawLineRight(self, x, y, color);
+            x += self.config.unitSize;
+            break;
+
+          case '-':
+            if (c && (prevCell === '*' || prevCell === '@')) {
+              x += self.config.unitSize;
+            }
+            drawLineLeft(self, x, y, color);
+            tracks.splice(track--, 1);
+
+            if (row[c - 1] === '*' || row[c - 1] === '@') {
+              // Redraw node
+              drawNode(self, x - self.config.unitSize, y, tracks[track]);
+            }
+            break;
+
+          case '.':
+            --track;
+            break;
+
         }
 
-        ++columnIndex;
+        ++track;
       }
 
       y -= self.config.unitSize;
+      if (tracks.length > track) {
+        // Drop redundant tracks
+        tracks.splice(track, tracks.length - track);
+      }
     }
   }
 
@@ -431,7 +521,7 @@
 
 /*
   Copyright (c) 2011--12, Terrence Lee <kill889@gmail.com>
-  Copyright (c) 2017, Nic Sandfield <niczero@wow.com>
+  Copyright (c) 2017--18, Nic Sandfield <niczero@wow.com>
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
