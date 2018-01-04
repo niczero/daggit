@@ -1,64 +1,65 @@
 (function () {
   'use strict';
 
-  var self = {},
-      tracks = [],
-      grid = [];
+  let defaultLightPalette = [ 'D29034', '4DC26B', '026AA7', 'A86CC1',
+          '484553', '30364C', '000000', 'EB5A46', '933B27', 'B44772',
+          '0079BF', '42548E', '49852E', 'CF513D', 'CD5A91', 'C377E0',
+          '61BD4F', 'E99E40', 'E6C60D', '4CAF54', 'FFAB4A', '00AECC',
+          'F2D600', '51E898', '3A476F', '222222', '094C72', 'A0711C',
+          '6E2F1A', '3E4D80', '00C2E0', 'BB8129', 'FF80CE', '6C547B',
+          'CCA42B', 'D9B51C', '0C3953', '3F6F21', '519839', '333333',
+          '5AAC44', '0082A0', '055A8C', '4A9839', '006988', '36405F',
+          '676D70', 'E76EB1', 'BD903C', '96304C', '0098B7', '4FD683',
+          '89609E', 'B04632' ],
+      defaultDarkPalette = [ '298FCA', 'EC9488', 'D6DADC', '4FD683', 'E6C60D',
+          'F5DD29', 'B3F1D0', 'FF95D6', 'CF513D', '0079BF', 'FDC788',
+          'F2D600', 'DFC0EB', 'B7DDB0', 'E76EB1', '7BC86C', '3E4D80',
+          'F3E260', '838FB5', '8FDFEB', '6170A1', 'B2B9D0', 'D5A6E6',
+          '676D70', '5AAC44', '6DECA9', '90ECC1', 'EFB3AB', '838C91',
+          'E2E4E6', '61BD4F', 'CD8DE5', '333333', 'FFAB4A', 'F5EA92',
+          'FAC6E5', 'A86CC1', 'FFB968', '42548E', '29CCE5', '8BBDD9',
+          '99D18F', '51E898', '00AECC', '5DD3E5', 'E99E40', '5BA4CF',
+          '00C2E0', 'FF80CE', 'EF7564', 'FFB0E1', 'FAD8B0', 'C377E0',
+          '026AA7', 'EB5A46' ];
 
-  function daggit (canvas, rawGraphList, config) {
-
+  function Daggit (canvas, rawGraphList, config) {
     if (!canvas.getContext) {
       return;
     }
 
-    self.config = config || {};
-    self.config.unitSize   = self.config.unitSize || 16;
-    self.config.lineWidth  = self.config.lineWidth || 4;
+    // Config
 
-    let defaultLightPalette = [ 'D29034', '4DC26B', '026AA7', 'A86CC1',
-            '484553', '30364C', '000000', 'EB5A46', '933B27', 'B44772',
-            '0079BF', '42548E', '49852E', 'CF513D', 'CD5A91', 'C377E0',
-            '61BD4F', 'E99E40', 'E6C60D', '4CAF54', 'FFAB4A', '00AECC',
-            'F2D600', '51E898', '3A476F', '222222', '094C72', 'A0711C',
-            '6E2F1A', '3E4D80', '00C2E0', 'BB8129', 'FF80CE', '6C547B',
-            'CCA42B', 'D9B51C', '0C3953', '3F6F21', '519839', '333333',
-            '5AAC44', '0082A0', '055A8C', '4A9839', '006988', '36405F',
-            '676D70', 'E76EB1', 'BD903C', '96304C', '0098B7', '4FD683',
-            '89609E', 'B04632' ],
-        defaultDarkPalette = [ '298FCA', 'EC9488', 'D6DADC', '4FD683', 'E6C60D',
-            'F5DD29', 'B3F1D0', 'FF95D6', 'CF513D', '0079BF', 'FDC788',
-            'F2D600', 'DFC0EB', 'B7DDB0', 'E76EB1', '7BC86C', '3E4D80',
-            'F3E260', '838FB5', '8FDFEB', '6170A1', 'B2B9D0', 'D5A6E6',
-            '676D70', '5AAC44', '6DECA9', '90ECC1', 'EFB3AB', '838C91',
-            'E2E4E6', '61BD4F', 'CD8DE5', '333333', 'FFAB4A', 'F5EA92',
-            'FAC6E5', 'A86CC1', 'FFB968', '42548E', '29CCE5', '8BBDD9',
-            '99D18F', '51E898', '00AECC', '5DD3E5', 'E99E40', '5BA4CF',
-            '00C2E0', 'FF80CE', 'EF7564', 'FFB0E1', 'FAD8B0', 'C377E0',
-            '026AA7', 'EB5A46' ];
-    self.config.theme = self.config.theme || {};
-    if (! self.config.theme.palette) {
-      if ((self.config.theme.name || 'light') === 'light') {
-        self.config.theme.palette = defaultLightPalette;
+    this.config = config || {};
+    this.config.xSize     = this.config.xSize || 16;
+    this.config.ySize     = this.config.ySize || this.config.xSize;
+    this.config.lineWidth = this.config.lineWidth || 3;
 
-        self.config.theme.node = self.config.theme.node || {
-          inner: 'FFFFFF',
-          outer: '000000',
+    this.config.theme = this.config.theme || {};
+    if (! this.config.theme.palette) {
+      if ((this.config.theme.name || 'light') === 'light') {
+        this.config.theme.palette = defaultLightPalette;
+
+        this.config.theme.node = this.config.theme.node || {
+          inner: 'fff',
+          outer: '000',
           shadow: 'rgba(250, 250, 250, 0.9)'
         };
       }
       else {
-        self.config.theme.palette = defaultDarkPalette;
+        this.config.theme.palette = defaultDarkPalette;
 
-        self.config.theme.node = self.config.theme.node || {
-          inner: '000000',
-          outer: 'FFFFFF',
+        this.config.theme.node = this.config.theme.node || {
+          inner: '000',
+          outer: 'fff',
           shadow: 'rgba(200, 200, 200, 0.4)'
         };
       }
     }
-    self.config.theme.node.radius = self.config.theme.node.radius || 5;
+    this.config.theme.node.radius = this.config.theme.node.radius || 5;
 
-    let ctx = self.ctx = canvas.getContext('2d');
+    // Context
+
+    let ctx = this.ctx = canvas.getContext('2d');
 
     let devicePixelRatio = window.devicePixelRatio || 1,
         backingStoreRatio = ctx.webkitBackingStorePixelRatio
@@ -68,165 +69,168 @@
             || ctx.backingStorePixelRatio
             || 1;
 
-    self.ratio = devicePixelRatio / backingStoreRatio;
+    this.ratio = devicePixelRatio / backingStoreRatio;
 
     let maxWidth = 0,
         height = rawGraphList.length;
 
+    this.grid = [];
     for (let r = 0; r < height; ++r) {
       let columnar = rawGraphList[r].replace(/^\s+|\s+$/g, '');
 
       let width = columnar.replace(/(\s|_|-|\.)/g, '').length;
       maxWidth = width > maxWidth ? width : maxWidth;
 
-      grid.unshift(columnar.split(''));  // reverse order of rows
+      this.grid.unshift(columnar.split(''));  // reverse order of rows
     }
 
-    let w = maxWidth * self.config.unitSize,
-        h = height * self.config.unitSize;
+    let w = maxWidth * this.config.xSize,
+        h = height * this.config.ySize;
 
-    canvas.width = w * self.ratio;
-    canvas.height = h * self.ratio;
+    // Canvas
+
+    canvas.width = w * this.ratio;
+    canvas.height = h * this.ratio;
 
     canvas.style.width = w + 'px';
     canvas.style.height = h + 'px';
-    self.canvas = canvas;
+    this.canvas = canvas;
 
-    ctx.lineWidth = self.config.lineWidth;
+    ctx.lineWidth = this.config.lineWidth;
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
 
-    ctx.scale(self.ratio, self.ratio);
+    ctx.scale(this.ratio, this.ratio);
 
-    self.used = 0;
-    draw(self, grid);
+    this.used = 0;  // counter of palette colours used so far
+    this.tracks = [];  // evolving list of current commit/branch threads
   }
 
-  function newTrack (self) {
-    let t = self.used++ % self.config.theme.palette.length;
-    return self.config.theme.palette[t];
+  Daggit.prototype.newTrack = function () {
+    let t = this.used++ % this.config.theme.palette.length;
+    return this.config.theme.palette[t];
   }
 
-  function drawArcRightSlopeRight (self, x, y, color) {
-    let ctx = self.ctx;
+  Daggit.prototype.drawArcRightSlopeRight = function (x, y, color) {
+    let ctx = this.ctx;
     ctx.strokeStyle = '#'+ color;
     ctx.beginPath();
-    ctx.moveTo(x, y + self.config.unitSize / 2);
+    ctx.moveTo(x, y + this.config.ySize / 2);
     ctx.bezierCurveTo(
-      x + self.config.unitSize / 4, y + self.config.unitSize / 2,
-      x + self.config.unitSize,     y,
-      x + self.config.unitSize,     y - self.config.unitSize / 2
+      x + this.config.xSize / 4, y + this.config.ySize / 2,
+      x + this.config.xSize,     y,
+      x + this.config.xSize,     y - this.config.ySize / 2
     );
     ctx.stroke();
   }
 
-  function drawArcRightUp (self, x, y, color) {
-    let ctx = self.ctx;
+  Daggit.prototype.drawArcRightUp = function (x, y, color) {
+    let ctx = this.ctx;
     ctx.strokeStyle = '#'+ color;
 
     ctx.beginPath();
-    ctx.moveTo(x, y + self.config.unitSize / 2);
+    ctx.moveTo(x, y + this.config.ySize / 2);
     ctx.bezierCurveTo(
-      x + self.config.unitSize / 2, y + self.config.unitSize / 2,
-      x + self.config.unitSize, y,
-      x + self.config.unitSize, y - self.config.unitSize / 2
+      x + this.config.xSize / 2, y + this.config.ySize / 2,
+      x + this.config.xSize, y,
+      x + this.config.xSize, y - this.config.ySize / 2
     );
     ctx.stroke();
   }
 
-  function drawArcUpRight (self, x, y, color) {
-    let ctx = self.ctx;
+  Daggit.prototype.drawArcUpRight = function (x, y, color) {
+    let ctx = this.ctx;
     ctx.strokeStyle = '#'+ color;
     ctx.beginPath();
-    ctx.moveTo(x, y + self.config.unitSize / 2);
-    ctx.bezierCurveTo(
-      x,                            y,
-      x + self.config.unitSize / 2, y - self.config.unitSize / 2,
-      x + self.config.unitSize,     y - self.config.unitSize / 2
-    );
-    ctx.stroke();
-  }
-
-  function drawDiagLeft (self, x, y, color) {
-    let ctx = self.ctx;
-    ctx.strokeStyle = '#'+ color;
-
-    ctx.beginPath();
-    ctx.moveTo(x, y + self.config.unitSize / 2);
-    ctx.bezierCurveTo(
-      x - self.config.unitSize / 4, y,
-      x - self.config.unitSize / 4, y,
-      x - self.config.unitSize / 2, y - self.config.unitSize / 2
-    );
-    ctx.stroke();
-  }
-
-  function drawDiagLeftLast (self, x, y, color) {
-    let ctx = self.ctx;
-    ctx.strokeStyle = '#'+ color;
-
-    ctx.beginPath();
-    ctx.moveTo(x, y + self.config.unitSize / 2);
-    ctx.bezierCurveTo(
-      x - self.config.unitSize / 4, y,
-      x - self.config.unitSize / 2, y,
-      x - self.config.unitSize / 2, y - self.config.unitSize / 2
-    );
-    ctx.stroke();
-  }
-
-  function drawDiagRight (self, x, y, color) {
-    let ctx = self.ctx;
-    ctx.strokeStyle = '#'+ color;
-
-    ctx.beginPath();
-    ctx.moveTo(x, y + self.config.unitSize / 2);
+    ctx.moveTo(x, y + this.config.ySize / 2);
     ctx.bezierCurveTo(
       x,                            y,
-      x + self.config.unitSize / 4, y,
-      x + self.config.unitSize / 2, y - self.config.unitSize / 2
+      x + this.config.xSize / 2, y - this.config.ySize / 2,
+      x + this.config.xSize,     y - this.config.ySize / 2
     );
     ctx.stroke();
   }
 
-  function drawLineLeft (self, x, y, color) {
-    let ctx = self.ctx;
+  Daggit.prototype.drawDiagLeft = function (x, y, color) {
+    let ctx = this.ctx;
     ctx.strokeStyle = '#'+ color;
+
     ctx.beginPath();
-    ctx.moveTo(x, y + self.config.unitSize / 2);
+    ctx.moveTo(x, y + this.config.ySize / 2);
+    ctx.bezierCurveTo(
+      x - this.config.xSize / 4, y,
+      x - this.config.xSize / 4, y,
+      x - this.config.xSize / 2, y - this.config.ySize / 2
+    );
+    ctx.stroke();
+  }
+
+  Daggit.prototype.drawDiagLeftLast = function (x, y, color) {
+    let ctx = this.ctx;
+    ctx.strokeStyle = '#'+ color;
+
+    ctx.beginPath();
+    ctx.moveTo(x, y + this.config.ySize / 2);
+    ctx.bezierCurveTo(
+      x - this.config.xSize / 4, y,
+      x - this.config.xSize / 2, y,
+      x - this.config.xSize / 2, y - this.config.ySize / 2
+    );
+    ctx.stroke();
+  }
+
+  Daggit.prototype.drawDiagRight = function (x, y, color) {
+    let ctx = this.ctx;
+    ctx.strokeStyle = '#'+ color;
+
+    ctx.beginPath();
+    ctx.moveTo(x, y + this.config.ySize / 2);
     ctx.bezierCurveTo(
       x,                            y,
-      x - self.config.unitSize / 2, y,
-      x - self.config.unitSize,     y
+      x + this.config.xSize / 4, y,
+      x + this.config.xSize / 2, y - this.config.ySize / 2
     );
     ctx.stroke();
   }
 
-  function drawLineRight (self, x, y, color) {
-    let ctx = self.ctx;
+  Daggit.prototype.drawLineLeft = function (x, y, color) {
+    let ctx = this.ctx;
     ctx.strokeStyle = '#'+ color;
     ctx.beginPath();
-    ctx.moveTo(x,                        y + self.config.unitSize / 2);
-    ctx.lineTo(x + self.config.unitSize, y + self.config.unitSize / 2);
+    ctx.moveTo(x, y + this.config.ySize / 2);
+    ctx.bezierCurveTo(
+      x,                            y,
+      x - this.config.xSize / 2, y,
+      x - this.config.xSize,     y
+    );
     ctx.stroke();
   }
 
-  function drawLineUp (self, x, y, color) {
-    let ctx = self.ctx;
+  Daggit.prototype.drawLineRight = function (x, y, color) {
+    let ctx = this.ctx;
     ctx.strokeStyle = '#'+ color;
     ctx.beginPath();
-    ctx.moveTo(x, y + self.config.unitSize / 2);
-    ctx.lineTo(x, y - self.config.unitSize / 2);
+    ctx.moveTo(x,                        y + this.config.ySize / 2);
+    ctx.lineTo(x + this.config.xSize, y + this.config.ySize / 2);
     ctx.stroke();
   }
 
-  function drawNode (self, x, y, color, selected) {
-    let ctx = self.ctx;
+  Daggit.prototype.drawLineUp = function (x, y, color) {
+    let ctx = this.ctx;
+    ctx.strokeStyle = '#'+ color;
+    ctx.beginPath();
+    ctx.moveTo(x, y + this.config.ySize / 2);
+    ctx.lineTo(x, y - this.config.ySize / 2);
+    ctx.stroke();
+  }
+
+  Daggit.prototype.drawNode = function (x, y, color, selected) {
+    let ctx = this.ctx;
     ctx.strokeStyle = '#'+ color;
 
-    drawLineUp(self, x, y, color);
+    this.drawLineUp(x, y, color);
 
-    let cnode = self.config.theme.node;
+    let cnode = this.config.theme.node;
 
     ctx.save();
     ctx.beginPath();
@@ -247,76 +251,77 @@
     ctx.restore();
   }
 
-  function drawSlopeLeft (self, x, y, color) {
-    let ctx = self.ctx;
+  Daggit.prototype.drawSlopeLeft = function (x, y, color) {
+    let ctx = this.ctx;
     ctx.strokeStyle = '#'+ color;
 
     ctx.beginPath();
-    ctx.moveTo(x + self.config.unitSize, y + self.config.unitSize / 2);
+    ctx.moveTo(x + this.config.xSize, y + this.config.ySize / 2);
     ctx.bezierCurveTo(
-      x + self.config.unitSize, y,
+      x + this.config.xSize, y,
       x,                        y,
-      x,                        y - self.config.unitSize / 2
+      x,                        y - this.config.ySize / 2
     );
     ctx.stroke();
   }
 
-  function drawSlopeRight (self, x, y, color) {
-    let ctx = self.ctx;
+  Daggit.prototype.drawSlopeRight = function (x, y, color) {
+    let ctx = this.ctx;
     ctx.strokeStyle = '#'+ color;
     ctx.beginPath();
-    ctx.moveTo(x, y + self.config.unitSize / 2);
-    ctx.bezierCurveTo(
-      x,                        y,
-      x + self.config.unitSize, y,
-      x + self.config.unitSize, y - self.config.unitSize / 2
-    );
-    ctx.stroke();
-  }
-
-  function drawSlopeRightFirst (self, x, y, color) {
-    let ctx = self.ctx;
-    ctx.strokeStyle = '#'+ color;
-    ctx.beginPath();
-    ctx.moveTo(x, y + self.config.unitSize / 2);
+    ctx.moveTo(x, y + this.config.ySize / 2);
     ctx.bezierCurveTo(
       x,                        y,
-      x + self.config.unitSize / 2, y,
-      x + self.config.unitSize, y - self.config.unitSize / 2
+      x + this.config.xSize, y,
+      x + this.config.xSize, y - this.config.ySize / 2
     );
     ctx.stroke();
   }
 
-  function drawSlopeRightLast (self, x, y, color) {
-    let ctx = self.ctx;
+  Daggit.prototype.drawSlopeRightFirst = function (x, y, color) {
+    let ctx = this.ctx;
     ctx.strokeStyle = '#'+ color;
     ctx.beginPath();
-    ctx.moveTo(x, y + self.config.unitSize / 2);
+    ctx.moveTo(x, y + this.config.ySize / 2);
     ctx.bezierCurveTo(
-      x + self.config.unitSize / 2, y,
-      x + self.config.unitSize, y,
-      x + self.config.unitSize, y - self.config.unitSize / 2
+      x,                        y,
+      x + this.config.xSize / 2, y,
+      x + this.config.xSize, y - this.config.ySize / 2
     );
     ctx.stroke();
   }
 
-  function draw (self, grid) {
+  Daggit.prototype.drawSlopeRightLast = function (x, y, color) {
+    let ctx = this.ctx;
+    ctx.strokeStyle = '#'+ color;
+    ctx.beginPath();
+    ctx.moveTo(x, y + this.config.ySize / 2);
+    ctx.bezierCurveTo(
+      x + this.config.xSize / 2, y,
+      x + this.config.xSize, y,
+      x + this.config.xSize, y - this.config.ySize / 2
+    );
+    ctx.stroke();
+  }
+
+  Daggit.prototype.draw = function () {
+    let grid = this.grid;
 
     // Initialise for first row
     for (let c = 0, width = grid[0].length; c < width; ++c) {
       let cell = grid[0][c];
       if (cell !== ' ' && cell !== '_' && cell !== '-' && cell !== '.') {
-        tracks.push(newTrack(self));
+        this.tracks.push(this.newTrack());
       }
     }
 
-    let y = (self.canvas.height / self.ratio) - self.config.unitSize / 2,
+    let y = (this.canvas.height / this.ratio) - this.config.ySize / 2,
         expectCrossover;
 
     // Iterate over all rows
     for (let r = 0, height = grid.length; r < height; ++r) {
 
-      let x = self.config.unitSize / 2,
+      let x = this.config.xSize / 2,
           row = grid[r],
           maybeCrossover = expectCrossover;
       expectCrossover = false;
@@ -332,7 +337,7 @@
         // " "
         if (cell === ' ') {
           if (c && prevCell !== '/') {
-            x += self.config.unitSize;
+            x += this.config.xSize;
           }
           continue;
         }
@@ -345,9 +350,9 @@
             && row[c - 2] === '_') {
 
           // crossover => swap tracks
-          let temp = tracks[track - 2];
-          tracks[track - 2] = tracks[track - 1];
-          tracks[track - 1] = temp;
+          let temp = this.tracks[track - 2];
+          this.tracks[track - 2] = this.tracks[track - 1];
+          this.tracks[track - 1] = temp;
           --track;
         }
 
@@ -357,9 +362,9 @@
           if (maybeCrossover && prevCell !== '_'
               && (row[c + 1] === '/' || row[c + 1] === '_')) {
             // crossover => swap tracks
-            let temp = tracks[track];
-            tracks[track] = tracks[track + 1];
-            tracks[track + 1] = temp;
+            let temp = this.tracks[track];
+            this.tracks[track] = this.tracks[track + 1];
+            this.tracks[track + 1] = temp;
           }
           else if (prevCell === '/') {
             expectCrossover = true;
@@ -369,14 +374,14 @@
         // "/"
         // Spawn a new track "|/" (that is not part of a crossover)
         else if (!maybeCrossover && cell === '/' && c && row[c - 1] === '|') {
-          tracks.splice(track, 0, newTrack(self));
+          this.tracks.splice(track, 0, this.newTrack());
         }
 
         // "*" / "@"
         // Merged tracks disappear
         else if ((cell === '*' || cell === '@') && r && c < width - 1
             && grid[r - 1][c + 1] === '\\') {
-          tracks.splice(track + 1, 1);
+          this.tracks.splice(track + 1, 1);
         }
 
         // "-"
@@ -392,19 +397,19 @@
 //          }
         }
 
-        let color = tracks[track];
+        let color = this.tracks[track];
 
         switch (cell) {
           case '*':
-            drawNode(self, x, y, color);
+            this.drawNode(x, y, color);
             break;
 
           case '@':
-            drawNode(self, x, y, color, true);
+            this.drawNode(x, y, color, true);
             break;
 
           case '|':
-            drawLineUp(self, x, y, color);
+            this.drawLineUp(x, y, color);
             break;
 
           case '/':
@@ -414,80 +419,80 @@
                 // Coming from a horizontal crossover
                 grid[r + 1][c + 1] = '|';  // modify the structure for space
 
-                drawArcRightUp(self, x, y, color);
+                this.drawArcRightUp(x, y, color);
               }
               else {
                 let i = c;
                 while (row[--i] === ' ') {}
-                x -= (c - 1 - i) * self.config.unitSize / 2;
+                x -= (c - 1 - i) * this.config.xSize / 2;
 
-                drawDiagRight(self, x, y, color);
+                this.drawDiagRight(x, y, color);
               }
-              x -= self.config.unitSize;
+              x -= this.config.xSize;
             }
             else if (grid[r + 1] && grid[r + 1][c + 2] === '_') {
-              drawArcUpRight(self, x, y, color);
+              this.drawArcUpRight(x, y, color);
             }
             else if (row[c - 2] === '_') {
-              drawArcRightSlopeRight(self, x, y, color);
+              this.drawArcRightSlopeRight(x, y, color);
             }
             else if (row[c + 1] === '|'
                 && grid[r + 1] && grid[r + 1][c + 2] === '/'
                 && row[c - 1] === '|'
                 && grid[r - 1] && grid[r - 1][c - 2] === '/') {
               // Internal diagonal crossover
-              drawSlopeRight(self, x, y, color);
+              this.drawSlopeRight(x, y, color);
             }
             else if (row[c + 1] === '|'
                 && grid[r + 1] && grid[r + 1][c + 2] === '/') {
               // Initial diagonal crossover
-              drawSlopeRightFirst(self, x, y, color);
+              this.drawSlopeRightFirst(x, y, color);
             }
             else if (row[c - 1] === '|'
                 && grid[r - 1] && grid[r - 1][c - 2] === '/') {
               // Ultimate diagonal crossover
-              drawSlopeRightLast(self, x, y, color);
+              this.drawSlopeRightLast(x, y, color);
             }
             else {
               // Simple slope
-              drawSlopeRight(self, x, y, color);
+              this.drawSlopeRight(x, y, color);
             }
-            x += self.config.unitSize;
+            x += this.config.xSize;
             break;
 
           case '\\':
             if (grid[r - 1] && grid[r - 1][c + 1] === '\\') {
               let i = c;
               while (row[--i] === ' ') {}
-              x -= (c - 2 - i) * self.config.unitSize / 2;
+              x -= (c - 2 - i) * this.config.xSize / 2;
 
               if (grid[r + 1] && grid[r + 1][c - 1] !== '\\') {
-                drawDiagLeftLast(self, x, y, color);
+                this.drawDiagLeftLast(x, y, color);
               }
               else {
-                drawDiagLeft(self, x, y, color);
+                this.drawDiagLeft(x, y, color);
               }
             }
             else {
-              drawSlopeLeft(self, x, y, color);
+              this.drawSlopeLeft(x, y, color);
             }
             break;
 
           case '_':
-            drawLineRight(self, x, y, color);
-            x += self.config.unitSize;
+            this.drawLineRight(x, y, color);
+            x += this.config.xSize;
             break;
 
           case '-':
             if (c && (prevCell === '*' || prevCell === '@')) {
-              x += self.config.unitSize;
+              x += this.config.xSize;
             }
-            drawLineLeft(self, x, y, color);
-            tracks.splice(track--, 1);
+            this.drawLineLeft(x, y, color);
+            this.tracks.splice(track--, 1);
 
             if (row[c - 1] === '*' || row[c - 1] === '@') {
               // Redraw node
-              drawNode(self, x - self.config.unitSize, y, tracks[track]);
+              this.drawNode(x - this.config.xSize, y, this.tracks[track]);
             }
             break;
 
@@ -500,21 +505,21 @@
         ++track;
       }
 
-      y -= self.config.unitSize;
-      if (tracks.length > track) {
+      y -= this.config.ySize;
+      if (this.tracks.length > track) {
         // Drop redundant tracks
-        tracks.splice(track, tracks.length - track);
+        this.tracks.splice(track, this.tracks.length - track);
       }
     }
   }
 
   if (typeof exports !== 'undefined' && typeof process !== 'undefined') {
     // Node.js module.
-    module.exports = exports = daggit;
+    module.exports = exports = Daggit;
   }
   else if (typeof window === 'object') {
     // Browser loading.
-    window.daggit = daggit;
+    window.Daggit = Daggit;
   }
 
 })();
