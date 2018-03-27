@@ -1,0 +1,33 @@
+{
+  "author": "Nic Sandfield",
+  "browserslist": [
+    "defaults",
+    "not ie < 9"
+  ],
+  "description": "Render beautiful git graphs to canvas",
+  "dependencies": {},
+  "devDependencies": {
+    "webpack": "^4.1.1",
+    "webpack-cli": "^2.0.12"
+  },
+  "keywords": [
+    "canvas",
+    "git",
+    "graph",
+    "ide",
+    "visualisation"
+  ],
+  "license": "MIT",
+  "main": "src/daggit.js",
+  "name": "daggit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/niczero/daggit.git"
+  },
+  "scripts": {
+    "build:dev": "webpack --config src/webpack.config.js --mode development",
+    "build:prod": "rm -f public/dist/* && webpack --config src/webpack.config.js --mode production",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "0.2.1"
+}
