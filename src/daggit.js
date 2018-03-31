@@ -134,15 +134,11 @@
     this.drawShape(x, y,  0, 0.5,  0.5, 1,  1, 1,  color);
   }
 
-  Daggit.prototype.drawDiagRight = function (x, y, color) {
-    this.drawShape(x, y,  0, 0.5,  0.25, 0.5,  0.5, 1,  color);
-  }
-
   Daggit.prototype.drawDiagRightEntry = function (x, y, color) {
     this.drawShape(x, y,  0, 0.5,  0.5, 0.5,  1, 1,  color);
   }
 
-  Daggit.prototype.drawDiagonalRightExit = function (x, y, color) {
+  Daggit.prototype.drawDiagRightExit = function (x, y, color) {
     this.drawShape(x, y,  0.5, 0.5,  1, 0.5,  1, 1,  color);
   }
 
@@ -244,6 +240,22 @@
           continue;
         }
 
+        // "|"
+        else if (cell === '|') {
+          // Check for "|/" or "|_"
+          if (maybeCrossover && prevCell !== '_'
+              && (row[c + 1] === '/' || row[c + 1] === '_')) {
+            // crossover => swap tracks
+            let temp = this.tracks[track];
+            this.tracks[track] = this.tracks[track + 1];
+            this.tracks[track + 1] = temp;
+          }
+          // Check for "/|"
+          else if (prevCell === '/') {
+            expectCrossover = true;
+          }
+        }
+
         // "_" / "/"
         // For crossovers, one track jumps over another
         // Check for "_|_" or "_|/"
@@ -258,25 +270,20 @@
           --track;
         }
 
-        // "|"
-        // Check for "|/" or "|_" or "/|"
-        else if (cell === '|') {
-          if (maybeCrossover && prevCell !== '_'
-              && (row[c + 1] === '/' || row[c + 1] === '_')) {
-            // crossover => swap tracks
-            let temp = this.tracks[track];
-            this.tracks[track] = this.tracks[track + 1];
-            this.tracks[track + 1] = temp;
+        // "/"
+        else if (cell === '/') {
+          // Spawn a new track "|/" (that is not part of a crossover)
+          if (!maybeCrossover && c && prevCell === '|') {
+            this.tracks.splice(track, 0, this.newTrack());
           }
-          else if (prevCell === '/') {
-            expectCrossover = true;
+          else if (grid[r - 1] && grid[r - 1][c - 1] === '/') {
+            row[c] = cell = '|';
           }
         }
 
-        // "/"
-        // Spawn a new track "|/" (that is not part of a crossover)
-        else if (!maybeCrossover && cell === '/' && c && prevCell === '|') {
-          this.tracks.splice(track, 0, this.newTrack());
+        // "\"
+        else if (cell === '\\' && grid[r - 1] && grid[r - 1][c + 1] === '\\') {
+          row[c] = cell = '|';
         }
 
         // "*" / "@"
@@ -290,13 +297,6 @@
         // Multi-merge
         else if (cell === '-' && row[c + 1] === '-') {
           row[c + 1] = ' ';
-        }
-
-        // "\"
-        else if (cell === '\\') {
-          if (grid[r - 1] && grid[r - 1][c + 1] === '\\') {
-            row[c] = cell = '|';
-          }
         }
 
         let color = this.tracks[track];
@@ -317,19 +317,7 @@
           case '/':
             if (grid[r + 1] && grid[r + 1][c + 1] === '/') {
               // Leads straight into another "/"
-              if (row[c - 2] === '_') {
-                // Coming from a horizontal crossover
-                grid[r + 1][c + 1] = '|';  // modify the structure for space
-
-                this.drawArcRightThenUp(x, y, color);
-              }
-              else {
-                let i = c;
-                while (row[--i] === ' ') {}
-                x -= (c - 1 - i) * this.config.xSize / 2;
-
-                this.drawDiagRight(x, y, color);
-              }
+              this.drawDiagRightExit(x, y, color);
               x -= this.config.xSize;
             }
             else if (grid[r + 1] && grid[r + 1][c + 2] === '_') {
@@ -353,7 +341,7 @@
             else if (row[c - 1] === '|'
                 && grid[r - 1] && grid[r - 1][c - 2] === '/') {
               // Ultimate diagonal crossover
-              this.drawDiagonalRightExit(x, y, color);
+              this.drawDiagRightExit(x, y, color);
             }
             else {
               // Simple slope
@@ -372,7 +360,7 @@
             break;
 
           case '-':
-            if (c && (prevCell === '*' || prevCell === '@')) {
+            if (row[c - 1] === '*' || row[c - 1] === '@') {
               x += this.config.xSize;
             }
             this.drawLineLeft(x, y, color);
