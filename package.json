@@ -1,7 +1,11 @@
 {
   "author": "Nic Sandfield",
   "description": "Render beautiful git graphs to canvas",
-  "devDependencies": {},
+  "devDependencies": {
+    "eslint": "^9.9.0",
+    "globals": "^15.9.0",
+    "vite": "^5.4.0"
+  },
   "keywords": [
     "canvas",
     "git",
@@ -10,12 +14,15 @@
     "visualisation"
   ],
   "license": "MIT",
-  "main": "src/git-overview.js",
   "name": "git-overview.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/niczero/git-overview.js.git"
   },
-  "scripts": {},
+  "scripts": {
+    "build": "vite build --debug",
+    "check:lint": "eslint ."
+  },
+  "type": "module",
   "version": "0.3.0"
 }
