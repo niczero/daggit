@@ -22,7 +22,7 @@
           '00C2E0', 'FF80CE', 'EF7564', 'FFB0E1', 'FAD8B0', 'C377E0',
           '026AA7', 'EB5A46' ];
 
-  function Daggit (canvas, rawGraphList, config) {
+  function Overview (canvas, rawGraphList, config) {
     if (!canvas.getContext) {
       return;
     }
@@ -106,12 +106,12 @@
     this.tracks = [];  // evolving list of current commit/branch threads
   }
 
-  Daggit.prototype.newTrack = function () {
+  Overview.prototype.newTrack = function () {
     let t = this.used++ % this.config.theme.palette.length;
     return this.config.theme.palette[t];
   }
 
-  Daggit.prototype.drawShape = function (x, y, x1, y1, x2, y2, x3, y3, color) {
+  Overview.prototype.drawShape = function (x, y, x1, y1, x2, y2, x3, y3, color) {
     let ctx = this.ctx,
         xsize = this.config.xSize,
         ysize = this.config.ySize;
@@ -126,27 +126,27 @@
     ctx.stroke();
   }
 
-  Daggit.prototype.drawArcRightThenUp = function (x, y, color) {
+  Overview.prototype.drawArcRightThenUp = function (x, y, color) {
     this.drawShape(x, y,  0.5, 0,  1, 0.5,  1, 1,  color);
   }
 
-  Daggit.prototype.drawArcUpThenRight = function (x, y, color) {
+  Overview.prototype.drawArcUpThenRight = function (x, y, color) {
     this.drawShape(x, y,  0, 0.5,  0.5, 1,  1, 1,  color);
   }
 
-  Daggit.prototype.drawDiagRightEntry = function (x, y, color) {
+  Overview.prototype.drawDiagRightEntry = function (x, y, color) {
     this.drawShape(x, y,  0, 0.5,  0.5, 0.5,  1, 1,  color);
   }
 
-  Daggit.prototype.drawDiagRightExit = function (x, y, color) {
+  Overview.prototype.drawDiagRightExit = function (x, y, color) {
     this.drawShape(x, y,  0.5, 0.5,  1, 0.5,  1, 1,  color);
   }
 
-  Daggit.prototype.drawLineLeft = function (x, y, color) {
+  Overview.prototype.drawLineLeft = function (x, y, color) {
     this.drawShape(x, y,  0, 0.5,  0.5, 0.5,  1, 0.5,  color);
   }
 
-  Daggit.prototype.drawLineRight = function (x, y, color) {
+  Overview.prototype.drawLineRight = function (x, y, color) {
     let ctx = this.ctx;
     ctx.strokeStyle = '#'+ color;
     ctx.beginPath();
@@ -155,7 +155,7 @@
     ctx.stroke();
   }
 
-  Daggit.prototype.drawLineUp = function (x, y, color) {
+  Overview.prototype.drawLineUp = function (x, y, color) {
     let ctx = this.ctx;
     ctx.strokeStyle = '#'+ color;
     ctx.beginPath();
@@ -164,7 +164,7 @@
     ctx.stroke();
   }
 
-  Daggit.prototype.drawNode = function (x, y, color, selected) {
+  Overview.prototype.drawNode = function (x, y, color, selected) {
     let ctx = this.ctx;
     ctx.strokeStyle = '#'+ color;
 
@@ -191,15 +191,15 @@
     ctx.restore();
   }
 
-  Daggit.prototype.drawSwitchLeft = function (x, y, color) {
+  Overview.prototype.drawSwitchLeft = function (x, y, color) {
     this.drawShape(x, y,  0, 0.5,  -1, 0.5,  -1, 1,  color);
   }
 
-  Daggit.prototype.drawSwitchRight = function (x, y, color) {
+  Overview.prototype.drawSwitchRight = function (x, y, color) {
     this.drawShape(x, y,  0, 0.5,  1, 0.5,  1, 1,  color);
   }
 
-  Daggit.prototype.draw = function () {
+  Overview.prototype.draw = function () {
     let grid = this.grid;
 
     // Initialise for first row
@@ -391,18 +391,18 @@
 
   if (typeof exports !== 'undefined' && typeof process !== 'undefined') {
     // Node.js module.
-    module.exports = exports = Daggit;
+    module.exports = exports = Overview;
   }
   else if (typeof window === 'object') {
     // Browser loading.
-    window.Daggit = Daggit;
+    window.Overview = Overview;
   }
 
 })();
 
 /*
   Copyright (c) 2011--12, Terrence Lee <kill889@gmail.com>
-  Copyright (c) 2017--18, Nic Sandfield <niczero@wow.com>
+  Copyright (c) 2017--24, Nic Sandfield <niczero@wow.com>
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
